@@ -32,7 +32,8 @@
       font-family: 'Space Grotesk', sans-serif;
       background: var(--bg);
       color: var(--text);
-      min-height: 100vh;
+      height: 100vh; /* Changed from min-height to clamp the layout tightly to the screen */
+      height: 100dvh; /* Handles mobile dynamic nav bars gracefully */
       overflow: hidden;
       display: flex;
       flex-direction: column;
@@ -61,6 +62,7 @@
       background: rgba(17,24,39,0.95);
       border-bottom: 1px solid var(--border);
       backdrop-filter: blur(12px);
+      flex-shrink: 0; /* Prevents header from resizing squishing */
     }
 
     .logo-ring {
@@ -126,7 +128,7 @@
       50% { opacity: 0.3; }
     }
 
-    /* ── SUGGESTED QUESTIONS (shown before first message) ── */
+    /* ── SUGGESTED QUESTIONS ── */
     #welcome-screen {
       position: relative;
       z-index: 5;
@@ -222,14 +224,15 @@
       margin-bottom: 4px;
     }
 
-    /* ── CHAT ── */
+    /* ── CHAT SCREEN FIXED FIXES ── */
     #chat-screen {
       display: none;
       flex-direction: column;
       flex: 1;
-      overflow: hidden;
+      overflow: hidden; 
       position: relative;
       z-index: 5;
+      min-height: 0; /* Critical flexbox property allowing containers to shrink properly below content size */
     }
 
     #messages {
@@ -240,9 +243,10 @@
       flex-direction: column;
       gap: 16px;
       scroll-behavior: smooth;
+      min-height: 0; 
     }
 
-    #messages::-webkit-scrollbar { width: 4px; }
+    #messages::-webkit-scrollbar { width: 6px; }
     #messages::-webkit-scrollbar-track { background: transparent; }
     #messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
@@ -289,6 +293,7 @@
       font-size: 14px;
       line-height: 1.7;
       max-width: calc(100% - 50px);
+      word-break: break-word; /* Prevents code blocks/long URLs from breaking layout limits */
     }
 
     .msg.bot .bubble {
@@ -353,6 +358,7 @@
       background: rgba(17,24,39,0.98);
       border-top: 1px solid var(--border);
       backdrop-filter: blur(12px);
+      flex-shrink: 0; /* Prevents user input bar from shrinking out of view */
     }
 
     .input-wrap {
@@ -433,7 +439,7 @@
 
     .header-actions { display: flex; align-items: center; gap: 10px; }
 
-    /* Markdown-like formatting */
+    /* Markdown formatting */
     .bubble strong { color: var(--gold-light); }
     .bubble em { color: var(--accent2); font-style: normal; }
     .bubble br + br { display: none; }
@@ -534,16 +540,13 @@
   </div>
 
   <script>
-    // ── CONFIG ──
-    // Replace this with your deployed Render backend URL after deployment
     const BACKEND_URL = window.location.hostname === 'localhost'
       ? 'http://localhost:3001'
-      : 'https://iiitbhopal-assistant.onrender.com'; // ← UPDATE THIS AFTER DEPLOYMENT
+      : 'https://iiitbhopal-assistant.onrender.com';
 
     let chatHistory = [];
     let isWelcome = true;
 
-    // ── UI HELPERS ──
     function showChatScreen() {
       if (isWelcome) {
         document.getElementById('welcome-screen').style.display = 'none';
@@ -595,7 +598,6 @@
         ? `<div class="sources-row">${sources.slice(0,4).map(s => `<span class="source-tag">📌 ${s}</span>`).join('')}</div>`
         : '';
 
-      // Simple formatting: **bold**, line breaks
       const formatted = text
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*(.*?)\*/g, '<em>$1</em>')
@@ -634,7 +636,6 @@
       if (el) el.remove();
     }
 
-    // ── SEND MESSAGE ──
     async function sendMessage() {
       const input = document.getElementById('user-input');
       const btn = document.getElementById('send-btn');
