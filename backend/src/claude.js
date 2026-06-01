@@ -1,43 +1,33 @@
 export async function askClaude(question, history = [], systemPrompt) {
-  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-  const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+  const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
-  const contents = [];
+  const messages = [{ role: "system", content: systemPrompt }];
 
   for (const msg of history.slice(-10)) {
-    contents.push({
-      role: msg.role === "assistant" ? "model" : "user",
-      parts: [{ text: msg.content }],
-    });
+    messages.push({ role: msg.role === "assistant" ? "assistant" : "user", content: msg.content });
   }
 
-  contents.push({
-    role: "user",
-    parts: [{ text: question }],
-  });
+  messages.push({ role: "user", content: question });
 
-  const body = {
-    system_instruction: {
-      parts: [{ text: systemPrompt }],
-    },
-    contents,
-    generationConfig: {
-      maxOutputTokens: 1024,
-      temperature: 0.7,
-    },
-  };
-
-  const res = await fetch(GEMINI_URL, {
+  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${GROQ_API_KEY}`
+    },
+    body: JSON.stringify({
+      model: "llama-3.1-8b-instant",
+      messages,
+      max_tokens: 1024,
+      temperature: 0.7
+    })
   });
 
   if (!res.ok) {
     const err = await res.text();
-    throw new Error(`Gemini API error: ${res.status} — ${err}`);
+    throw new Error(`Groq API error: ${res.status} — ${err}`);
   }
 
   const data = await res.json();
-  return data.candidates[0].content.parts[0].text;
+  return data.choices[0].message.content;
 }
