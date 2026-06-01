@@ -1,11 +1,7 @@
-// Using Google Gemini API — 100% FREE (gemini-1.5-flash)
-// Free tier: 15 requests/min, 1500 requests/day — more than enough!
-
 export async function askClaude(question, history = [], systemPrompt) {
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-  const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+  const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
 
-  // Build conversation history for Gemini format
   const contents = [];
 
   for (const msg of history.slice(-10)) {
